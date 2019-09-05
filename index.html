@@ -1,0 +1,511 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>DynReport</title>
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet body" href="vendor/bootstrap/css/body.css"> <!-- For a responsive padding according to resize of navbar -->
+    <link rel='stylesheet prefetch' href='vendor/dragula/dragula.min.css'>
+    <!-- Custom CSS styles -->
+    <style>
+        .card {
+            border-width: 0px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
+            margin-bottom: 14px;
+        }
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.1);
+            color: white;
+            text-align: center;
+        }
+        .dropdown {
+            margin-right: 1rem
+        }
+        .tooltip-inner {
+            max-width: 350px;
+        }
+        .navbar {
+            padding-left: 2.2rem;
+            padding-right: 2.2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="index.html" id="myLink"
+           data-toggle="tooltip" data-placement="bottom"
+           title="Report of results from DynTest execution on the specified build or date in dropdown menus to the right. Charts are draggable by holding the left mouse button on their header to move positions. They can also be collapsed or shown by left clicking their header.">
+            DynReport – DynTest Execution Report
+        </a>
+
+        <div class="dropdown ml-auto">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a id="testBuild"></a>
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <div id="outputBuildList"></div>
+            </div>
+        </div>
+
+        <div class="dropdown float-right">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a id="testDay"></a>
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <div id="outputDateList"></div>
+            </div>
+        </div>
+
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span>Execution Info</span>
+        </button>
+
+        <button type="button" class="btn btn-outline-secondary float-right" data-toggle="tooltip"
+                data-placement="top" style="margin-left: 1rem"
+                title="Report of results from DynTest execution on the specified build or date in dropdown
+            menus to the left. Charts are draggable by holding the left mouse button on their header to move positions. They
+            can also be collapsed or shown by left clicking their header.">
+            ?
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" id="testCases">Execution info could not be generated</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="totalPassed"></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="testAgents"></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="buildUsed"></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="sitesParticipated"></a>
+                </li>
+                <br>
+                <li class="nav-item">
+                    <a class="nav-link" id="startDate"></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="endDate"></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="execTime"></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" id="main">
+        <div class="row-draggable row">
+
+            <div class="block col-lg-12">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse1">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse1" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Bar Chart:</b> Actual vs. Expected
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays results from current execution as actual in order
+                                    of execution and displays the expected outcome below. Chart is categorised by test agent. Bars can
+                                    be extended or not by setting ExtendCombinedBars in settings xml file of the DynReport tool. Length
+                                    depends on execution time and color depends on outcome. The chart is mainly used to compare outcome
+                                    and execution time in actual compared to expected, and for a quick summary of the whole DynTest
+                                    execution. Clicking on a test case result in any chart will bring you to their summary in TFS
+                                    Run Explorer.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse show" id="collapse1" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="Combined_container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block col-lg-6">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse2">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse2" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Pie Chart:</b> Outcome Report
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays the total amount of all different types of outcomes for all test agents.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse multicollapse1 show" id="collapse2" aria-expanded="true">
+                        <div class="card-body">
+                            <div id='chart_OutcomePieChartReport_container'></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="block col-lg-6">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse3">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse3" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Column Chart:</b> Reason for Test Case Failure
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays the different categories of failures in all test cases
+                                    and counts the number of occurances. Click on a column to see which specific test cases that had
+                                    this error.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse show" id="collapse3" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="ReasonForTestCaseFailureContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block col-lg-6">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse4">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse4" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Pie Chart:</b> Test Agents Unavailability
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays how many test agents that were available or unavailable during
+                                    the current DynTest execution.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse4" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="chart_pie_Agent_container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block col-lg-6">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse22">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse22" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>List:</b> Top ten bad boys
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="A list of the top ten test cases in the current report that have failed the most times in a row">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse22" aria-expanded="true">
+                        <div class="card-body">
+                            <div id='list_badboys_container'></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block col-lg-6">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse23">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse23" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>List:</b> Results over time and agent
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays historical results for the failed tests in this run that has been acting flaky. Intended use is to find test cases that either has a randomness to them or a dependency to what environment they are run on.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse23" aria-expanded="true">
+                        <div class="card-body">
+                            <div id='resultsovertimeandagent_container'></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block col-lg-6">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse12">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse12" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Pie Chart:</b> Test cases earliest run against build
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays historical test scheduled runs .">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse12" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="chart_pie_TcsRun_container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="block col-lg-6">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse13">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse13" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Pie Chart:</b> DynTest run statistics
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title=" DynTest run statistics .">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse13" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="chart_pie_DtRunStatistic_container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="block col-lg-6">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse5">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Column Chart:</b> Reason of Unavailability of Agents
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays reasons for why test agents were not ready
+                                    to execute DynTest test cases.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse5" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="chart_TestUnavailableReport_container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block col-lg-12">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse6">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse6" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Column Chart:</b> Test Status vs. Agents
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays outcome per test agent and type of outcome. Click on a column to
+                                    see a list of test cases present in that column.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse6" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="chart_TestStatusVsAgentsReport_container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block col-lg-12">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse7">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse7" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Column Chart:</b> Test Execution Trend
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays all test case outcomes over time for all participating test agents.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse7" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="chart_TestExecutionTrendChartReport_container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block col-lg-12">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse8">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse8" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Area Chart:</b> Test Agent Utilization
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Display how many test cases have been executed on
+                                    all test agents over time.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse8" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="chart_TestAgentUtilizationChartReport_container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block col-lg-12">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse9">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse9" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Treemap:</b> Deviations from plan - Outcome
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays test cases that deviates in outcome from
+                                    what was expected. The test cases are sorted by agent and outcome. Green test
+                                    cases were expected to fail but passed. Red test cases was expected to pass
+                                    but failed. Only deviating passed and failed results are listed.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse9" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="DeviationOutcomeContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block col-lg-12">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse10">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse10" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Treemap:</b> Passed Tests - Time Deviation From Plan
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays test cases with a high deviation of duration in their actual execution
+                                    time compared to their expected duration. It displays the deviation of duration in percent of the expected
+                                    duration, but it only displays test cases that were expected to pass and also have passed. If the deviation
+                                    is between +/- 5% it wont be on display. The chart is used to locate passed test cases with large time
+                                    deviations from what is expected.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse10" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="DeviationTimeContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block col-lg-12">
+                <div class="card">
+                    <div class="card-header" data-toggle="collapse" data-target="#collapse11">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse11" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>Scatter plot:</b> Passed Tests - Time Deviation From Plan
+                            </button>
+                            <button type="button" class="btn btn-outline-info float-right" data-toggle="tooltip"
+                                    data-placement="top" title="Displays test cases with deviation of duration in their actual execution
+                                    time compared to their expected duration. It displays the deviation of duration in percent of the expected
+                                    duration, but it only displays test cases that were expected to pass and also have passed. The chart is used
+                                    to locate passed test cases with time deviations from what is expected. Has no too low procentage restriction.">
+                                ?
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="collapse" id="collapse11" aria-expanded="true">
+                        <div class="card-body">
+                            <div id="ScatterDeviationTimeContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer -->
+    <div class="footer">
+        <span class="text-muted">© 2019 Copyright: <a href="https://www.abb.com"> ABB.com</a></span>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src='vendor/dragula/dragula.min.js'></script>
+    <script src="vendor/highcharts/highcharts.js"></script>
+    <script src="vendor/highcharts/heatmap.js"></script>
+    <script src="vendor/highcharts/treemap.js"></script>
+    <script src="scripts/dropdown-animations.js"></script>
+
+
+    <script src="vendor/highcharts/drilldown.js"></script>
+
+    <!-- Drag and drop Javascript -->
+    <script src="scripts/dnd.js"></script>
+
+    <!-- Javascript - Test's date and build -->
+    <script>
+        var loc = window.location.pathname;
+        var dir = loc.substring(0, loc.lastIndexOf('/')); // Get file's directory path
+        dir = dir.substring(dir.lastIndexOf('/') + 1, dir.length); // Get only directory name
+
+        var date = dir.substring(0, dir.lastIndexOf('%20')); // Remove build name (%20 is space)
+        document.getElementById("testDay").innerHTML = date;
+
+        var build = dir.substring(dir.lastIndexOf('%20') + 3, dir.length); // Remove build name (%20 is space)
+        document.getElementById("testBuild").innerHTML = build;
+    </script>
+
+    <!-- Enable Tooltip -->
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+
+    <!-- Header Data -->
+    <script src="reportData/header.js"></script>
+    <script src="../outputList.js"></script>
+
+    <!-- Charts Javascript -->
+    <script src="reportData/OutcomePieChart.js"></script>
+    <script src="reportData/Combined.js"></script>
+    <script src="reportData/PieAgent.js"></script>
+    <script src="reportData/TcsRunPieChart.js"></script>
+    <script src="reportData/TestStatusVsAgents.js"></script>
+    <script src="reportData/UnavailableAgentChart.js"></script>
+    <script src="reportData/ExecutionTrend.js"></script>
+    <script src="reportData/AgentUtilization.js"></script>
+    <script src="reportData/DeviationOutcome.js"></script>
+    <script src="reportData/DeviationTime.js"></script>
+    <script src="reportData/ScatterDeviationTime.js"></script>
+	  <script src="reportData/DtRunstatistic.js"></script>
+	  <script src="reportData/ListBadBoys.js"></script>
+	  <script src="reportData/ResultsOverTimeAndAgent.js"></script>
+    <script src="reportData/ReasonTestCaseFailure.js"></script>
+
+</body>
+</html>
