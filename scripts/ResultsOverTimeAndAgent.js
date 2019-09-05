@@ -1,0 +1,1 @@
+var txt = "No data to display";document.getElementById("resultsovertimeandagent_container").innerHTML = txt;document.getElementById("resultsovertimeandagent_container").style.marginLeft = "1em";
