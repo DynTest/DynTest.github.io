@@ -1,4 +1,5 @@
 # DynTest
  
-ffor testing 
-pushing
+---
+permalink: /index.html
+---
