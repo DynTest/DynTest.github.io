@@ -1,3 +1,5 @@
 # DynTest
  
-ffor testing 
+---
+permalink: /index.html
+---
